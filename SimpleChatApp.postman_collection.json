@@ -2,13 +2,13 @@
   "info": {
     "_postman_id": "8f2a1b94-28b9-4a47-a89e-4c7b8d910123",
     "name": "Freightfox - Simple Chat Application Using Redis",
-    "description": "Postman collection for testing the Spring Boot Simple Chat Application backed by Redis.",
+    "description": "Postman collection for the Spring Boot Simple Chat Application backed by Redis.\n\nLive base URL: https://freight-fox-chat-application-using-redis.onrender.com/\n\nOverride the collection variable `baseUrl` with http://localhost:8080 for local Docker/Maven runs.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8081",
+      "value": "https://freight-fox-chat-application-using-redis.onrender.com",
       "type": "string"
     },
     {

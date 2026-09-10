@@ -4,6 +4,8 @@ An enterprise-ready, REST-compliant Spring Boot 3 backend application implementi
 
 Developed as a backend assignment for **Freightfox**.
 
+**Live base URL:** [https://freight-fox-chat-application-using-redis.onrender.com/](https://freight-fox-chat-application-using-redis.onrender.com/)
+
 ---
 
 ## 📑 Table of Contents
@@ -57,7 +59,11 @@ graph TD
 
 ## API Specifications
 
-Base URL: `http://localhost:8080/api/chatapp/chatrooms`
+**Base URL:** `https://freight-fox-chat-application-using-redis.onrender.com/`
+
+All endpoints below are relative to that host (example: `https://freight-fox-chat-application-using-redis.onrender.com/api/chatapp/chatrooms`).
+
+Local Docker/Maven runs still use `http://localhost:8080/`.
 
 ### 1. Create a Chat Room
 - **Method & URL**: `POST /api/chatapp/chatrooms`
@@ -182,7 +188,9 @@ This starts both Redis (with AOF persistence) and the Chat Application container
 cd d:/code/Freightfox/simple-chat-app
 docker compose up --build -d
 ```
-The application will be accessible at `http://localhost:8080`.
+The application will be accessible locally at `http://localhost:8080`.
+
+The deployed API is at [https://freight-fox-chat-application-using-redis.onrender.com/](https://freight-fox-chat-application-using-redis.onrender.com/).
 
 To stop the containers:
 ```bash
@@ -221,10 +229,17 @@ mvn clean test
 A pre-configured Postman collection is included in the project:
 📄 [SimpleChatApp.postman_collection.json](./SimpleChatApp.postman_collection.json)
 
+The collection `baseUrl` variable is set to the live Render host:
+
+`https://freight-fox-chat-application-using-redis.onrender.com`
+
+For local testing, change `baseUrl` to `http://localhost:8080`.
+
 ### Steps to import and test:
 1. Open Postman.
 2. Click **Import** and select `SimpleChatApp.postman_collection.json`.
-3. The collection provides the following requests pre-configured:
+3. Confirm the collection variable `baseUrl` is `https://freight-fox-chat-application-using-redis.onrender.com`.
+4. The collection provides the following requests pre-configured:
    - `1. Create Chat Room`
    - `2. Join Chat Room`
    - `3. Send Message 1`
