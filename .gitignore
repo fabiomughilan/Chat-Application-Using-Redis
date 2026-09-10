@@ -85,3 +85,9 @@ yarn.lock
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+
+target/
+*.class
+.idea/
+.vscode/
+.env
