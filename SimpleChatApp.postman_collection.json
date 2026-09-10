@@ -1,0 +1,296 @@
+{
+  "info": {
+    "_postman_id": "8f2a1b94-28b9-4a47-a89e-4c7b8d910123",
+    "name": "Freightfox - Simple Chat Application Using Redis",
+    "description": "Postman collection for testing the Spring Boot Simple Chat Application backed by Redis.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "general",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Chat Room",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomName\": \"general\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms"
+          ]
+        },
+        "description": "Creates a chat room with a unique room name."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Join Chat Room",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participant\": \"guest_user\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}/join",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}",
+            "join"
+          ]
+        },
+        "description": "Adds a participant to the chat room's participant set."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Send Message 1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participant\": \"guest_user\",\n  \"message\": \"Hello, everyone!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}/messages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}",
+            "messages"
+          ]
+        },
+        "description": "Stores the message in Redis List and publishes it over Pub/Sub."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Send Message 2",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participant\": \"another_user\",\n  \"message\": \"Hi, guest_user!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}/messages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}",
+            "messages"
+          ]
+        },
+        "description": "Sends a second message to verify chronological order in list."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Retrieve Chat History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}/messages?limit=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}",
+            "messages"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Number of recent messages to retrieve"
+            }
+          ]
+        },
+        "description": "Fetches the last N messages from the chat room in chronological order."
+      },
+      "response": []
+    },
+    {
+      "name": "6. List All Chat Rooms",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms"
+          ]
+        },
+        "description": "Lists all active chat rooms with their metadata and participant counts."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Room Participants",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}/participants",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}",
+            "participants"
+          ]
+        },
+        "description": "Fetches the list of participants currently in the chat room."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Error Case - Duplicate Room",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"roomName\": \"general\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms"
+          ]
+        },
+        "description": "Tests validation handling when attempting to create a room with an already existing name."
+      },
+      "response": []
+    },
+    {
+      "name": "9. Error Case - Send to Non-existent Room",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"participant\": \"guest_user\",\n  \"message\": \"Hello unknown\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/nonexistent_room/messages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "nonexistent_room",
+            "messages"
+          ]
+        },
+        "description": "Tests error response when sending a message to a room that does not exist."
+      },
+      "response": []
+    },
+    {
+      "name": "10. Delete Chat Room (Optional)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/chatapp/chatrooms/{{roomId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "chatapp",
+            "chatrooms",
+            "{{roomId}}"
+          ]
+        },
+        "description": "Deletes the chat room and purges all associated Redis Hash, Set, and List structures."
+      },
+      "response": []
+    }
+  ]
+}
