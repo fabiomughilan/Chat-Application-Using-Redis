@@ -3,16 +3,14 @@ package com.freightfox.chatapp.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.freightfox.chatapp.pubsub.ChatMessageSubscriber;
-import io.lettuce.core.ClientOptions;
-import io.lettuce.core.SocketOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -37,10 +35,13 @@ public class RedisConfig {
     }
 
     @Bean
-    public LettuceConnectionFactory redisConnectionFactory(
-            @Value("${spring.data.redis.url}") String redisUrl,
+    public JedisConnectionFactory redisConnectionFactory(
+            @Value("${spring.data.redis.url:}") String redisUrl,
+            @Value("${UPSTASH_REDIS_REST_URL:}") String upstashRestUrl,
+            @Value("${UPSTASH_REDIS_REST_TOKEN:}") String upstashRestToken,
             @Value("${spring.data.redis.timeout:10s}") Duration timeout) {
-        RedisConnectionSettings.ParsedRedisUrl parsed = RedisConnectionSettings.parse(redisUrl);
+        RedisConnectionSettings.ParsedRedisUrl parsed =
+                RedisConnectionSettings.resolve(redisUrl, upstashRestUrl, upstashRestToken);
 
         RedisStandaloneConfiguration standalone = new RedisStandaloneConfiguration(parsed.host(), parsed.port());
         standalone.setDatabase(parsed.database());
@@ -51,28 +52,21 @@ public class RedisConfig {
             standalone.setPassword(RedisPassword.of(parsed.password()));
         }
 
-        SocketOptions socketOptions = SocketOptions.builder()
+        JedisClientConfiguration.JedisClientConfigurationBuilder clientBuilder = JedisClientConfiguration.builder()
                 .connectTimeout(timeout)
-                .keepAlive(true)
-                .build();
-        ClientOptions clientOptions = ClientOptions.builder()
-                .socketOptions(socketOptions)
-                .autoReconnect(true)
-                .build();
+                .readTimeout(timeout);
+        JedisClientConfiguration clientConfig = parsed.ssl()
+                ? clientBuilder.useSsl().build()
+                : clientBuilder.build();
 
-        LettuceClientConfiguration.LettuceClientConfigurationBuilder client =
-                LettuceClientConfiguration.builder()
-                        .commandTimeout(timeout)
-                        .clientOptions(clientOptions);
-        if (parsed.ssl()) {
-            client.useSsl();
-        }
+        log.info(
+                "Connecting to Redis with Jedis at {}:{} (tls={}, auth={})",
+                parsed.host(),
+                parsed.port(),
+                parsed.ssl(),
+                parsed.hasPassword() ? "password" : "none");
 
-        log.info("Connecting to Redis at {}:{} (tls={})", parsed.host(), parsed.port(), parsed.ssl());
-
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(standalone, client.build());
-        factory.setValidateConnection(false);
-        return factory;
+        return new JedisConnectionFactory(standalone, clientConfig);
     }
 
     @Bean

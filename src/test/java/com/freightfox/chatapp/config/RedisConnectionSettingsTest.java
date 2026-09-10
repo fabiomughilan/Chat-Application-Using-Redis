@@ -55,4 +55,46 @@ class RedisConnectionSettingsTest {
         assertThatThrownBy(() -> RedisConnectionSettings.parse("  "))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void restUrlAndTokenBecomeNativeTlsRedis() {
+        var parsed = RedisConnectionSettings.resolve(
+                null,
+                "https://pet-mole-114407.upstash.io",
+                "rest-token");
+        assertThat(parsed.host()).isEqualTo("pet-mole-114407.upstash.io");
+        assertThat(parsed.port()).isEqualTo(6379);
+        assertThat(parsed.ssl()).isTrue();
+        assertThat(parsed.username()).isEqualTo("default");
+        assertThat(parsed.password()).isEqualTo("rest-token");
+    }
+
+    @Test
+    void httpsRedisUrlUsesRestTokenForPassword() {
+        var parsed = RedisConnectionSettings.resolve(
+                "https://pet-mole-114407.upstash.io",
+                null,
+                "rest-token");
+        assertThat(parsed.ssl()).isTrue();
+        assertThat(parsed.password()).isEqualTo("rest-token");
+        assertThat(parsed.port()).isEqualTo(6379);
+    }
+
+    @Test
+    void quotedRestUrlIsAccepted() {
+        var parsed = RedisConnectionSettings.resolve(
+                null,
+                "\"https://pet-mole-114407.upstash.io\"",
+                "\"rest-token\"");
+        assertThat(parsed.host()).isEqualTo("pet-mole-114407.upstash.io");
+        assertThat(parsed.password()).isEqualTo("rest-token");
+    }
+
+    @Test
+    void restUrlWithoutTokenIsRejected() {
+        assertThatThrownBy(() -> RedisConnectionSettings.resolve(
+                "https://pet-mole-114407.upstash.io", null, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("REST URL cannot be used alone");
+    }
 }
